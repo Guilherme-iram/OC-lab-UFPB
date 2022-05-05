@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <cstdlib>
+#include <ctime>
 
 int matrizAdj[6][6] = 
         {
@@ -37,6 +39,7 @@ class Solution{
             for(int i = 0; i < this->sequencia.size() - 1; i++){
                 this->valorObj += matrizAdj[this->sequencia[i]][this->sequencia[i+1]];
             }
+            this->valorObj += matrizAdj[this->sequencia.back()][this->sequencia[0]];
 
             return this->valorObj;
 
@@ -52,8 +55,7 @@ class Solution{
                     i_b = i;
             }
 
-            if (i_a == -1 || i_b == -1){
-                std::cout << "MOVIMENTO INVALIDO!" << std::endl;
+            if (i_a == -1 || i_b == -1 || i_a == i_b){
                 return;
             }
 
@@ -70,6 +72,29 @@ class Solution{
             int custoDepoisSwap = aux.calcularValorObj();
             return (custoDepoisSwap - custoAntesSwap);
             
+        }
+
+        void perturbacao(){
+            int a, b, c, d, nCidades = this->sequencia.size();
+
+            srand(time(0));
+
+            a = rand() % nCidades;
+            b = rand() % nCidades;
+            c = rand() % nCidades;
+            d = rand() % nCidades;
+            
+            while (1){
+                if (a != b && c != d && a != c && b != d){
+                    break;
+                }
+                a = rand() % nCidades;
+                b = rand() % nCidades;
+                c = rand() % nCidades;
+                d = rand() % nCidades;
+            }
+            this->movimento(a, b);
+            this->movimento(c, d);
         }
 
         void bestImprovementSwap(){
@@ -94,7 +119,7 @@ class Solution{
 
 };
 
-Solution Construcao(){ //Insersao mais barata
+Solution Construcao(){ 
     
     Solution s({0, 2, 1});
     std::vector<int> caminhos_disponiveis = {3, 4, 5};
@@ -175,14 +200,14 @@ int main()
 
 {
     int iterIls = 0;
-    int maxIterIls = 10;
+    int maxIterIls = 100;
 
     Solution solucao = {{}};
     solucao = Construcao();
     Solution best = solucao;
     best.exibirSolucao();
     cout << "Custo: " << best.calcularValorObj() << endl;
-
+    
     while (iterIls <= maxIterIls)
     {
         solucao.bestImprovementSwap(); //Busca local
@@ -190,6 +215,7 @@ int main()
             best = solucao;
             iterIls = 0;
         }
+        solucao.perturbacao();
         iterIls++;
     }
 
@@ -198,5 +224,5 @@ int main()
     cout << "Custo: " << best.calcularValorObj() << endl;
     
     return 0;
-    
+
 }
