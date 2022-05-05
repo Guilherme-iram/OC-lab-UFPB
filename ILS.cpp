@@ -16,7 +16,7 @@ class Solution{
 
     public:
         std::vector<int> sequencia;
-        double valorObj;
+        int valorObj;
 
     public:
         Solution(std::vector<int> sequencia):
@@ -30,15 +30,66 @@ class Solution{
                 std::cout << this->sequencia.back() + 1 << std::endl;
             }
 
-        void calcularValorObj(){
+        int calcularValorObj(){
 
             this->valorObj = 0;
             
-            for(int i = 0; i < this->sequencia.size() - 2; i++){
-
+            for(int i = 0; i < this->sequencia.size() - 1; i++){
                 this->valorObj += matrizAdj[this->sequencia[i]][this->sequencia[i+1]];
             }
 
+            return this->valorObj;
+
+        }
+
+        void movimento(int a, int b){
+
+            int aux, i_a = -1, i_b = - 1;
+            for (int i = 0; i < this->sequencia.size(); i++){
+                if (a == this->sequencia[i])
+                    i_a = i;
+                if (b == this->sequencia[i])
+                    i_b = i;
+            }
+
+            if (i_a == -1 || i_b == -1){
+                std::cout << "MOVIMENTO INVALIDO!" << std::endl;
+                return;
+            }
+
+            this->sequencia[i_a] = b;
+            this->sequencia[i_b] = a;
+
+        }
+
+        int calculaCustoSwap(int a, int b){
+            
+            Solution aux = {{this->sequencia}};
+            int custoAntesSwap = aux.calcularValorObj();
+            aux.movimento(a, b);
+            int custoDepoisSwap = aux.calcularValorObj();
+            return (custoDepoisSwap - custoAntesSwap);
+            
+        }
+
+        void bestImprovementSwap(){
+            int bestDelta = 0;
+            int best_i, best_j;
+            for (int i = 0; i < this->sequencia.size() - 1; i++){
+                for (int j = 1; j < this->sequencia.size(); j++){
+                    int delta = calculaCustoSwap(i, j);
+                    if (delta < bestDelta)
+                    {
+                        bestDelta = delta;
+                        best_i = i;
+                        best_j = j;
+                    }
+                }
+            }
+
+            if (bestDelta < 0){
+                this->movimento(best_i, best_j);
+            }
         }
 
 };
@@ -123,12 +174,29 @@ using namespace std;
 int main()
 
 {
+    int iterIls = 0;
+    int maxIterIls = 10;
 
     Solution solucao = {{}};
     solucao = Construcao();
-    solucao.exibirSolucao();
-    solucao.calcularValorObj();
-    cout << solucao.valorObj << endl;
+    Solution best = solucao;
+    best.exibirSolucao();
+    cout << "Custo: " << best.calcularValorObj() << endl;
 
+    while (iterIls <= maxIterIls)
+    {
+        solucao.bestImprovementSwap(); //Busca local
+        if (solucao.calcularValorObj() < best.calcularValorObj()){
+            best = solucao;
+            iterIls = 0;
+        }
+        iterIls++;
+    }
+
+    cout << endl;
+    best.exibirSolucao();
+    cout << "Custo: " << best.calcularValorObj() << endl;
+    
     return 0;
+    
 }
